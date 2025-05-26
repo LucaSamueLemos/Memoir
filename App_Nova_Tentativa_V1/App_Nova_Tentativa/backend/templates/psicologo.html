@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Área do Psicólogo</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Painel do Psicólogo</h1>
+        <div id="gerenciar-pacientes">
+            <h2>Pacientes</h2>
+            <ul>
+                {% if pacientes %}
+                    {% for paciente in pacientes %}
+                        <li>{{ paciente.nome }} ({{ paciente.email }}) - <a href="/paciente/{{ paciente.id }}/registros">Ver Registros</a></li>
+                    {% endfor %}
+                {% else %}
+                    <li>Nenhum paciente cadastrado.</li>
+                {% endif %}
+            </ul>
+            <h2>Adicionar Novo Paciente</h2>
+            <form method="POST" action="/adicionar_paciente">
+                <label for="nome">Nome:</label>
+                <input type="text" id="nome" name="nome" placeholder="Nome do paciente" required>
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" placeholder="Email do paciente" required>
+                <button type="submit">Adicionar Paciente</button>
+            </form>
+        </div>
+        <div id="visualizar-registros">
+            <h2>Registros dos Pacientes</h2>
+        </div>
+        <div id="graficos-area">
+            <h2>Gráficos</h2>
+        </div>
+        <div id="calendario-consultas">
+            <h2>Calendário de Consultas</h2>
+        </div>
+        <button onclick="logout()">Sair</button>
+    </div>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
