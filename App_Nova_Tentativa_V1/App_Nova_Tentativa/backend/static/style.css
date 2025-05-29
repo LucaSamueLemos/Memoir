@@ -1,138 +1,274 @@
-/* Improved style.css */
+/* backend/static/css/style.css */
+
+/* Definição de variáveis CSS para facilitar a mudança de cores */
+:root {
+    --primary-color: #6096BA;   /* Azul Sereno */
+    --secondary-color: #A3CEF1; /* Verde Suave/Menta */
+    --background-light: #F2F2F2; /* Cinza Claro para fundo */
+    --text-dark: #3D5B5B;       /* Cinza Médio/Azulado para texto */
+    --accent-color: #C69C6D;    /* Dourado/Areia para acentos */
+    --alert-success-bg: #d4edda;
+    --alert-success-text: #155724;
+    --alert-success-border: #c3e6cb;
+    --alert-error-bg: #f8d7da;
+    --alert-error-text: #721c24;
+    --alert-error-border: #f5c6cb;
+    --alert-info-bg: #d1ecf1;
+    --alert-info-text: #0c5460;
+    --alert-info-border: #bee5eb;
+}
+
+/* Estilos gerais para o corpo da página */
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0;
-    padding: 20px;
-    background: linear-gradient(135deg, #f0f4f8, #d9e2ec);
-    color: #333;
-    min-height: 100vh;
+    font-family: 'Open Sans', sans-serif; /* Fonte para o corpo do texto */
+    background-color: var(--background-light);
+    color: var(--text-dark);
+    min-height: 98dvh;
+    display: Grid;
+    grid-template-rows: auto 1fr auto;
+}
+
+h1, h2, h3, h4, h5, h6, .navbar-brand, .card-title {
+    font-family: 'Montserrat', sans-serif; /* Fonte para títulos e cabeçalhos */
+    color: var(--primary-color);
+}
+
+/* Estilos para a barra de navegação */
+.navbar {
+    background-color: var(--primary-color) !important;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.15); /* Sombra mais visível */
+    border-bottom: 3px solid var(--accent-color); /* Linha sutil na base */
+}
+
+.navbar-brand {
+    font-weight: 700; /* Bold */
+    font-size: 1.6rem;
+    color: #fff !important;
     display: flex;
-    justify-content: center;
-    align-items: flex-start;
+    align-items: center;
 }
 
-.container {
-    background-color: #ffffffcc;
-    padding: 30px 40px;
-    border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-    max-width: 700px;
-    width: 100%;
-    box-sizing: border-box;
+.navbar-brand .fa-brain {
+    color: var(--secondary-color); /* Ícone com a cor de acento */
+    margin-right: 8px;
 }
 
-h1, h2 {
-    color: #102a43;
-    margin-bottom: 20px;
-    font-weight: 700;
+.nav-link {
+    color: #e0e0e0 !important;
+    transition: color 0.3s ease, text-shadow 0.3s ease;
 }
 
-form {
-    display: flex;
-    flex-direction: column;
+.nav-link:hover {
+    color: #ffffff !important;
+    text-shadow: 0 0 8px rgba(255,255,255,0.7);
 }
 
-input[type="email"],
-input[type="password"],
-input[type="text"],
-input[type="number"],
-textarea {
-    width: 100%;
-    padding: 12px 15px;
-    margin-bottom: 18px;
-    border: 1.5px solid #bcccdc;
-    border-radius: 6px;
-    font-size: 1rem;
-    transition: border-color 0.3s ease;
-    box-sizing: border-box;
-    font-family: inherit;
-}
-
-input[type="email"]:focus,
-input[type="password"]:focus,
-input[type="text"]:focus,
-input[type="number"]:focus,
-textarea:focus {
-    border-color: #3b82f6;
-    outline: none;
-    box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
-}
-
-label {
-    font-weight: 600;
-    margin-bottom: 6px;
-    color: #334e68;
-}
-
-button {
-    background-color: #3b82f6;
-    color: white;
-    padding: 12px 20px;
+/* Estilos para cards */
+.card {
     border: none;
-    border-radius: 8px;
+    border-radius: 15px; /* Cantos mais arredondados */
+    box-shadow: 0 6px 12px rgba(0,0,0,0.1); /* Sombra mais pronunciada */
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    background-color: #ffffff; /* Fundo branco para os cards */
+}
+
+.card:hover {
+    transform: translateY(-5px); /* Efeito de elevação mais notável */
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+}
+
+.card-title {
+    color: var(--primary-color);
+    font-weight: 600; /* Semibold */
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--secondary-color); /* Linha embaixo do título */
+}
+
+/* Estilos para botões */
+.btn { /* Estilos gerais para todos os botões */
+    border-radius: 25px; /* Botões mais arredondados */
+    padding: 0.75rem 1.5rem; /* Mais preenchimento para um "botão" maior */
+    font-weight: 700; /* Texto mais bold */
+    font-size: 1.05rem; /* Um pouco maior */
     cursor: pointer;
-    font-size: 1.1rem;
+    text-transform: uppercase; /* Texto em maiúsculas */
+    letter-spacing: 0.5px; /* Espaçamento entre letras */
+    transition: all 0.3s ease; /* Transição suave para hover e focus */
+}
+
+.btn-primary {
+    background-color: var(--primary-color); /* Azul Sereno */
+    border-color: var(--primary-color);
+    color: #fff;
+}
+
+
+.btn-primary:hover {
+    background-color: var(--secondary-color); /* Verde Suave/Menta no hover */
+    border-color: var(--secondary-color);
+    color: var(--text-dark); /* Texto mais escuro no hover */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Sombra no hover */
+    transform: translateY(-2px); /* Leve elevação no hover */
+}
+
+.btn-success { /* Botão para adicionar/registrar (Ex: "Registrar Emoção", "Adicionar Paciente") */
+    background-color: #6BBF59; /* Verde mais vibrante, mas suave */
+    border-color: #6BBF59;
+    color: #fff;
+}
+
+.btn-success:hover {
+    background-color: #55A84D;
+    border-color: #55A84D;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.btn-info { /* Botão para questionário/informações (Ex: "Responder Questionário", "Ver Detalhes") */
+    background-color: #5BC0BE; /* Verde-água/azul claro */
+    border-color: #5BC0BE;
+    color: #fff;
+}
+
+.btn-info:hover {
+    background-color: #4AA4A3;
+    border-color: #4AA4A3;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.btn-secondary { /* Para botões como "Voltar" ou "Cancelar" */
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: #fff;
+}
+.btn-secondary:hover {
+    background-color: #5a6268;
+    border-color: #545b62;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+/* Estilos para o rodapé */
+footer {
+    background-color: var(--primary-color) !important;
+    color: #e0e0e0;
+    font-size: 0.9rem;
+    box-shadow: 0 -3px 6px rgba(0,0,0,0.15); /* Sombra para profundidade */
+    border-top: 3px solid var(--accent-color); /* Linha sutil no topo */
+}
+
+footer .fa-heart {
+    color: #FFC107; /* Dourado/Amarelo para o coração, para contraste */
+}
+
+/* Estilos para fotos de perfil */
+.profile-photo img {
+    border: 4px solid var(--secondary-color); /* Borda mais grossa com cor de acento */
+    padding: 4px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    object-fit: cover; /* Garante que a imagem preencha o espaço sem distorção */
+}
+
+/* Estilos para alertas (mensagens flash) */
+.alert {
+    border-radius: 10px;
+    padding: 1.2rem 1.8rem;
+    margin-bottom: 2rem;
+    font-weight: 500;
+}
+
+.alert-success {
+    background-color: var(--alert-success-bg);
+    color: var(--alert-success-text);
+    border-color: var(--alert-success-border);
+}
+
+.alert-error, .alert-danger {
+    background-color: var(--alert-error-bg);
+    color: var(--alert-error-text);
+    border-color: var(--alert-error-border);
+}
+
+.alert-info {
+    background-color: var(--alert-info-bg);
+    color: var(--alert-info-text);
+    border-color: var(--alert-info-border);
+}
+
+/* Estilos para formulários */
+.form-control {
+    border-radius: 8px; /* Cantos mais suaves */
+    border: 1px solid #ced4da; /* Borda padrão mais discreta */
+    padding: 0.75rem 1rem; /* Um pouco mais de preenchimento */
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    font-size: 1rem; /* Tamanho de fonte padrão */
+}
+
+.form-control:focus {
+    border-color: var(--secondary-color); /* A cor azul suave no foco */
+    box-shadow: 0 0 0 0.25rem rgba(163, 206, 241, 0.25); /* Sombra suave no foco */
+    outline: none; /* Remove a borda de foco padrão do navegador */
+}
+
+/* Opcional: Estilo para labels */
+label {
+    font-weight: 600; /* Labels mais bold */
+    color: var(--text-dark); /* Cor do texto principal */
+    margin-bottom: 0.5rem;
+}
+
+/* Estilos para listas de pacientes/registros */
+.list-group-item {
+    border-radius: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #e0e0e0;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.list-group-item:hover {
+    background-color: #f8f9fa;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.accordion-button {
+    background-color: #e9f5f5 !important; /* Cor mais clara para cabeçalhos do acordeão */
+    color: var(--text-dark) !important;
+    border-radius: 10px !important;
     font-weight: 600;
-    transition: background-color 0.3s ease;
-    align-self: flex-start;
-    margin-top: 10px;
 }
 
-button:hover {
-    background-color: #2563eb;
+.accordion-button:not(.collapsed) {
+    background-color: var(--secondary-color) !important; /* Cor para cabeçalhos de acordeão abertos */
+    color: #fff !important; /* Texto branco no botão aberto */
+    box-shadow: inset 0 -1px 0 rgba(0, 0, 0, .125);
 }
 
-button:focus {
-    outline: 3px solid #93c5fd;
-    outline-offset: 2px;
+.accordion-body {
+    background-color: #ffffff;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
 }
 
-#registro-emocao, #questionario-area, #calendario-registros {
-    margin-bottom: 40px;
+.accordion-item {
+    border: 1px solid var(--secondary-color);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    overflow: hidden; /* Garante que os cantos arredondados sejam respeitados */
 }
 
-#questionario-area form label,
-#questionario-area form input[type="radio"],
-#questionario-area form input[type="checkbox"] {
-    margin-right: 10px;
-}
-
-#questionario-area form input[type="radio"],
-#questionario-area form input[type="checkbox"] {
-    vertical-align: middle;
-}
-
-#questionario-area form textarea {
-    resize: vertical;
-    min-height: 80px;
-}
-
-button[onclick="logout()"] {
-    background-color: #ef4444;
-    margin-top: 30px;
-}
-
-button[onclick="logout()"]:hover {
-    background-color: #dc2626;
-}
-
-/* Responsive Design */
-@media (max-width: 600px) {
-    body {
-        padding: 10px;
-        align-items: center;
-    }
-
-    .container {
-        padding: 20px;
-        max-width: 100%;
-        border-radius: 8px;
-        box-shadow: none;
-        background-color: #fff;
-    }
-
-    button {
-        width: 100%;
-        align-self: stretch;
-    }
+/* Estilos para o login na página inicial */
+.login-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f9f9f9 100%); /* Gradiente suave */
+    padding: 50px;
+    border-radius: 20px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+    border: 1px solid var(--secondary-color);
+    display: grid;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 50px ;
+    justify-content:center; 
+    align-items:center;
 }

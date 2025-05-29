@@ -1,60 +1,91 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Área do Paciente</title>
-       <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    <div class="container">
-        <h1>Olá, [Nome do Paciente]!</h1>
-        <div id="registro-emocao">
-            <h2>Registrar Emoção</h2>
-            <form method="POST" action="/registrar_emocao">
-                <label for="emocao">Como você está se sentindo hoje?</label>
-                <input type="text" id="emocao" name="emocao" placeholder="Como você está se sentindo hoje?" required>
-                <button type="submit">Registrar</button>
-            </form>
+{% extends "base.html" %}
+
+{% block title %}Página do Paciente - {{ paciente.nome }} - Memoir App{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Bem-vindo(a), {{ paciente.nome }}!</h1>
+
+<div class="card mb-4">
+    <div class="card-body text-center">
+        <h5 class="card-title">Sua Foto de Perfil</h5>
+        <div class="profile-photo mb-3">
+            {% if paciente.foto_perfil and paciente.foto_perfil != 'default.jpg' %}
+                <img src="{{ url_for('static', filename='uploads/' + paciente.foto_perfil) }}" alt="Foto de Perfil" class="img-thumbnail rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+            {% else %}
+                <img src="{{ url_for('static', filename='uploads/default.jpg') }}" alt="Foto Padrão" class="img-thumbnail rounded-circle" style="width: 150px; height: 150px; object-fit: cover;">
+            {% endif %}
         </div>
-        <div id="questionario-area">
-            <h2>Questionário</h2>
-            <div id="questionario">
-                <h2>Responder Questionário Diário</h2>
-                <form method="POST" action="/responder_questionario">
-                    <label for="humor_geral">1. Como você avalia seu humor geral hoje (de 1 a 5, sendo 1 muito mal e 5 muito bem)?</label>
-                    <input type="number" id="humor_geral" name="humor_geral" min="1" max="5" required>
-                    <br><br>
+        <form method="POST" action="{{ url_for('routes.upload_foto_propria_paciente') }}" enctype="multipart/form-data">
+            <div class="input-group mb-3">
+                <input type="file" class="form-control" name="foto" accept="image/*" required>
+                <button type="submit" class="btn btn-primary">Atualizar Foto</button>
+            </div>
+        </form>
+    </div>
+</div>
 
-                    <label for="sentimento_principal">2. Qual foi o principal sentimento que você experimentou hoje?</label>
-                    <input type="text" id="sentimento_principal" name="sentimento_principal" placeholder="Ex: Alegria, Tristeza, Calma, Ansiedade" required>
-                    <br><br>
-
-                    <label>3. Você conseguiu dormir bem na última noite?</label>
-                    <input type="radio" id="dormiu_bem_sim" name="dormiu_bem" value="True" required>
-                    <label for="dormiu_bem_sim">Sim</label>
-                    <input type="radio" id="dormiu_bem_nao" name="dormiu_bem" value="False">
-                    <label for="dormiu_bem_nao">Não</label>
-                    <br><br>
-
-                    <label>4. Você se sentiu motivado(a) a realizar suas tarefas hoje?</label>
-                    <input type="radio" id="motivacao_sim" name="motivacao_tarefas" value="True" required>
-                    <label for="motivacao_sim">Sim</label>
-                    <input type="radio" id="motivacao_nao" name="motivacao_tarefas" value="False">
-                    <label for="motivacao_nao">Não</label>
-                    <br><br>
-
-                    <label for="causa_estresse">5. Houve algo específico que causou estresse ou desconforto hoje? (Se sim, descreva)</label>
-                    <textarea id="causa_estresse" name="causa_estresse" rows="4" placeholder="Descreva aqui se houve algo..."></textarea>
-                    <br><br>
-
-                    <button type="submit">Enviar Respostas</button>
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Registrar Emoção do Dia</h5>
+                <form method="POST" action="{{ url_for('routes.registrar_emocao') }}">
+                    <div class="mb-3">
+                        <label for="emocao" class="form-label">Como você se sente hoje?</label>
+                        <input type="text" class="form-control" id="emocao" name="emocao" placeholder="Ex: Feliz, Triste, Ansioso..." required>
+                    </div>
+                    <button type="submit" class="btn btn-success">Registrar</button>
                 </form>
             </div>
         </div>
-        <div id="calendario-registros">
-            <h2>Seus Registros e Consultas</h2>
-        </div>
-        <button onclick="logout()">Sair</button>
     </div>
-     <script src="{{ url_for('static', filename='script.js') }}"></script>
-</body>
-</html>
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Questionário Diário</h5>
+                <form method="POST" action="{{ url_for('routes.responder_questionario') }}">
+                    <div class="mb-3">
+                        <label for="humor_geral" class="form-label">Como está seu humor geral (1 a 5)?</label>
+                        <input type="number" class="form-control" id="humor_geral" name="humor_geral" min="1" max="5" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="sentimento_principal" class="form-label">Qual o sentimento principal que você sentiu hoje?</label>
+                        <input type="text" class="form-control" id="sentimento_principal" name="sentimento_principal">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Você dormiu bem?</label>
+                        <div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="dormiu_bem" id="dormiu_bem_sim" value="True">
+                                <label class="form-check-label" for="dormiu_bem_sim">Sim</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="dormiu_bem" id="dormiu_bem_nao" value="False">
+                                <label class="form-check-label" for="dormiu_bem_nao">Não</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Você teve motivação para realizar suas tarefas?</label>
+                        <div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="motivacao_tarefas" id="motivacao_tarefas_sim" value="True">
+                                <label class="form-check-label" for="motivacao_tarefas_sim">Sim</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="motivacao_tarefas" id="motivacao_tarefas_nao" value="False">
+                                <label class="form-check-label" for="motivacao_tarefas_nao">Não</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="causa_estresse" class="form-label">Algo te causou estresse hoje?</label>
+                        <textarea class="form-control" id="causa_estresse" name="causa_estresse" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-info">Enviar Respostas</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

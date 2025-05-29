@@ -1,54 +1,55 @@
-# backend/__init__.py
+# backend/__init__.py OU backend/app.py
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from os import path
 from flask_login import LoginManager
-import os # Importe o módulo os
+from flask_migrate import Migrate
 
 db = SQLAlchemy()
-login_manager = LoginManager()
-DB_NAME = 'site.db'
-basedir = path.abspath(path.dirname(__file__))
-instance_path = path.join(basedir, '..', 'instance')
-database_path = path.join(instance_path, DB_NAME)
-
-# Configurações para upload de arquivos
-UPLOAD_FOLDER = os.path.join(basedir, 'static', 'uploads') # Pasta onde as fotos serão salvas
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'} # Extensões de arquivo permitidas
+DB_NAME = "site.db"
+migrate = Migrate()
 
 def create_app():
-    app = Flask(__name__, instance_path=instance_path)
-    app.config['SECRET_KEY'] = 'chave_secreta_para_seguranca'
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{database_path}'
-    
-    # NOVAS CONFIGURAÇÕES PARA UPLOAD
-    app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-    app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # Limite de 16MB para uploads
-    # Garante que a pasta de uploads existe
-    if not os.path.exists(UPLOAD_FOLDER):
-        os.makedirs(UPLOAD_FOLDER)
+    app = Flask(__name__)
+    app.config['SECRET_KEY'] = 'sua_chave_secreta_aqui' # Mude para uma chave segura em produção
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{DB_NAME}'
+    app.config['UPLOAD_FOLDER'] = path.join(app.root_path, 'static', 'uploads')
+    app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024 # Limite de 16MB para uploads
 
+    # Inicializa as extensões com o app
     db.init_app(app)
+    migrate.init_app(app, db)
 
-    login_manager.init_app(app)
-    login_manager.login_view = 'routes.login'
+    # Importa os modelos aqui para evitar problemas de importação circular
+    # e garantir que eles sejam carregados após 'db' ser inicializado.
+    from .models import User, Paciente, RegistroEmocao, RespostaQuestionario # Removendo 'Consulta' se não estiver em models.py
 
-    @login_manager.user_loader
-    def load_user(user_id):
-        from .models import User
-        return User.query.get(int(user_id))
-
+    # Importa as rotas
     from .routes import routes
     app.register_blueprint(routes, url_prefix='/')
 
-    from .models import User, Paciente, RegistroEmocao, RespostaQuestionario, Consulta
-
+    # Cria o banco de dados se não existir
     with app.app_context():
-        db.create_all() # Isso criará a nova coluna 'foto_perfil' se ela não existir
+        if not path.exists(path.join(app.instance_path, DB_NAME)):
+            db.create_all()
+            print('Banco de dados criado!')
+        else:
+            print('Banco de dados já existe.')
+
+    # Configura o Flask-Login
+    login_manager = LoginManager()
+    login_manager.login_view = 'routes.login' # Rota para onde redirecionar se o usuário não estiver logado
+    login_manager.init_app(app)
+
+    @login_manager.user_loader
+    def load_user(id):
+        return User.query.get(int(id)) # Busca um usuário pelo ID
 
     return app
 
-# Função auxiliar para verificar a extensão do arquivo
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+# Se você estiver usando um arquivo app.py que é executado diretamente,
+# pode querer adicionar o seguinte para que 'python -m backend.app' funcione:
+if __name__ == '__main__':
+    app = create_app()
+    app.run(debug=True) # Modo debug é bom para desenvolvimento

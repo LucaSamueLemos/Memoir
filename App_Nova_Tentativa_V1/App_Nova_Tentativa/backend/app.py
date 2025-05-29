@@ -23,7 +23,7 @@ def create_app():
     from .routes import routes
     app.register_blueprint(routes, url_prefix='/')
 
-    from .models import User, Paciente, RegistroEmocao, RespostaQuestionario, Consulta
+    from .models import User, Paciente, RegistroEmocao, RespostaQuestionario
 
     with app.app_context():
         db.create_all()
