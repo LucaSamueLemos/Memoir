@@ -1,62 +1,88 @@
 # backend/models.py
-from . import db
+
+from . import db # Importa a instância global de SQLAlchemy
 from flask_login import UserMixin
-from sqlalchemy.sql import func
+from datetime import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(150), unique=True)
-    password = db.Column(db.String(150))
-    tipo = db.Column(db.String(20)) # 'paciente' ou 'psicologo'
-    pacientes = db.relationship('Paciente', backref='psicologo', lazy=True) # Psicólogo tem vários pacientes
+    email = db.Column(db.String(150), unique=True, nullable=False)
+    password = db.Column(db.String(150), nullable=False)
+    tipo = db.Column(db.String(20), nullable=False) # 'paciente' ou 'psicologo'
 
-    # Adicione estes métodos se ainda não os tiver para Flask-Login
-    def get_id(self):
-        return str(self.id)
+    # Relação 1: User (como usuário de login) para Paciente (perfil associado)
+    # Um User (paciente) tem UM Paciente (perfil).
+    # primaryjoin é essencial para diferenciar de outras FKs entre User e Paciente.
+    paciente_perfil = db.relationship(
+        'Paciente',
+        back_populates='user_login', # back_populates aponta para o atributo na classe Paciente
+        lazy=True,
+        uselist=False, # Um usuário paciente só tem um perfil de paciente
+        primaryjoin="User.id == Paciente.id" # Esta é a FK onde User.id == Paciente.id
+    )
 
-    def is_active(self):
-        return True # Todos os usuários são ativos
-    
-    def is_authenticated(self):
-        return True # Os usuários autenticados são, bem, autenticados
-    
-    def is_anonymous(self):
-        return False # Nossos usuários não são anônimos
+    # Relação 2: User (como psicólogo) para MÚLTIPLOS Pacientes
+    # Um User (psicólogo) pode ter MÚLTIPLOS Pacientes.
+    pacientes_atendidos = db.relationship(
+        'Paciente',
+        foreign_keys='Paciente.psicologo_id', # Esta é a FK onde Paciente.psicologo_id == User.id
+        backref='psicologo_responsavel', # backref cria um atributo 'psicologo_responsavel' no Paciente
+        lazy=True
+    )
+
+    def __repr__(self):
+        return f'<User {self.email} ({self.tipo})>'
+
+    def set_password(self, password):
+        self.password = generate_password_hash(password, method='pbkdf2:sha256')
+
+    def check_password(self, password):
+        return check_password_hash(self.password, password)
 
 class Paciente(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    nome = db.Column(db.String(150))
-    email = db.Column(db.String(150), unique=True) # Email do paciente
-    psicologo_id = db.Column(db.Integer, db.ForeignKey('user.id')) # Chave estrangeira para o User (psicólogo)
-    registros_emocoes = db.relationship('RegistroEmocao', backref='paciente', lazy=True)
-    respostas_questionario = db.relationship('RespostaQuestionario', backref='paciente', lazy=True)
-    consultas = db.relationship('Consulta', backref='paciente', lazy=True)
-    
-    # NOVO: Adicione esta coluna para a foto de perfil
-    foto_perfil = db.Column(db.String(255), nullable=True, default='default.jpg') # Armazenará o nome do arquivo da foto
+    # O ID do paciente é também o ID do seu User associado
+    id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    nome = db.Column(db.String(100), nullable=False)
+    data_nascimento = db.Column(db.Date, nullable=True)
+    # ID do psicólogo que acompanha este paciente
+    psicologo_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+    foto_perfil = db.Column(db.String(255), nullable=False, default='default.jpg')
+
+    # Relação do Paciente de volta para o User (seu próprio usuário de login)
+    # back_populates aponta para o atributo 'paciente_perfil' em User
+    user_login = db.relationship(
+        'User',
+        back_populates='paciente_perfil', # back_populates aponta para o atributo 'paciente_perfil' em User
+        foreign_keys=[id], # A chave estrangeira para esta relação é o próprio id do Paciente
+        lazy=True,
+        uselist=False # Um perfil de paciente pertence a um único User
+    )
+
+    registros_emocoes = db.relationship('RegistroEmocao', backref='paciente_obj', lazy=True)
+    respostas_questionario = db.relationship('RespostaQuestionario', backref='paciente_obj', lazy=True)
+
+    def __repr__(self):
+        return f'<Paciente {self.nome} (ID User: {self.id})>'
 
 class RegistroEmocao(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    emocao = db.Column(db.String(150))
-    data_registro = db.Column(db.DateTime(timezone=True), default=func.now())
-    paciente_id = db.Column(db.Integer, db.ForeignKey('paciente.id'))
+    emocao = db.Column(db.String(100), nullable=False)
+    data_registro = db.Column(db.DateTime, default=datetime.utcnow)
+    paciente_id = db.Column(db.Integer, db.ForeignKey('paciente.id'), nullable=False)
+
+    def __repr__(self):
+        return f'<RegistroEmocao {self.emocao} - Paciente: {self.paciente_id}>'
 
 class RespostaQuestionario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    
-    # NOVAS COLUNAS PARA AS RESPOSTAS DO QUESTIONÁRIO
-    humor_geral = db.Column(db.Integer) # De 1 a 5
-    sentimento_principal = db.Column(db.String(255)) # Texto livre
-    dormiu_bem = db.Column(db.Boolean) # True/False
-    motivacao_tarefas = db.Column(db.Boolean) # True/False
-    causa_estresse = db.Column(db.Text) # Texto mais longo para descrição
-    
-    data_resposta = db.Column(db.DateTime(timezone=True), default=func.now())
-    paciente_id = db.Column(db.Integer, db.ForeignKey('paciente.id'))
+    humor_geral = db.Column(db.Integer, nullable=True) # Ex: 1-5
+    sentimento_principal = db.Column(db.String(100), nullable=True)
+    dormiu_bem = db.Column(db.Boolean, nullable=True)
+    motivacao_tarefas = db.Column(db.Boolean, nullable=True)
+    causa_estresse = db.Column(db.Text, nullable=True)
+    data_resposta = db.Column(db.DateTime, default=datetime.utcnow)
+    paciente_id = db.Column(db.Integer, db.ForeignKey('paciente.id'), nullable=False)
 
-
-class Consulta(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    data_hora = db.Column(db.DateTime(timezone=True))
-    paciente_id = db.Column(db.Integer, db.ForeignKey('paciente.id'))
-    psicologo_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    def __repr__(self):
+        return f'<RespostaQuestionario - Paciente: {self.paciente_id} - {self.data_resposta.strftime("%Y-%m-%d")}>'

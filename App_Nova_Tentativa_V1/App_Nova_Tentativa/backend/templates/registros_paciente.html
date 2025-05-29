@@ -1,76 +1,82 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Registros de {{ paciente.nome }}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    <div class="container">
-        <h1>Registros de Emoções de {{ paciente.nome }}</h1>
-        <p>
-            **Nome do Paciente:** {{ paciente.nome }} <br>
-            **Email:** {{ paciente.email }} <br>
-            **ID do Paciente:** {{ paciente.id }} <br>
-        </p>
+{% extends "base.html" %}
 
-        <div class="profile-photo">
-            {% if paciente.foto_perfil and paciente.foto_perfil != 'default.jpg' %}
-                <img src="{{ url_for('static', filename='uploads/' + paciente.foto_perfil) }}" alt="Foto de Perfil" width="150" height="150">
-            {% else %}
-                <img src="{{ url_for('static', filename='uploads/default.jpg') }}" alt="Foto Padrão" width="150" height="150">
-            {% endif %}
+{% block title %}Registros de {{ paciente.nome }} - Memoir App{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">Registros Detalhados de {{ paciente.nome }}</h1>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Informações do Paciente</h5>
+            <p class="card-text">
+                <strong>Nome do Paciente:</strong> {{ paciente.nome }} <br>
+                {# Usando a nova relação user_login #}
+                <strong>Email:</strong> {% if paciente.user_login %}{{ paciente.user_login.email }}{% else %}N/A{% endif %} <br>
+                <strong>ID do Paciente:</strong> {{ paciente.id }} <br>
+            </p>
+            <div class="profile-photo mb-3">
+                {% if paciente.foto_perfil and paciente.foto_perfil != 'default.jpg' %}
+                    <img src="{{ url_for('static', filename='uploads/' + paciente.foto_perfil) }}" alt="Foto de Perfil" class="img-thumbnail rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
+                {% else %}
+                    <img src="{{ url_for('static', filename='uploads/default.jpg') }}" alt="Foto Padrão" class="img-thumbnail rounded-circle" style="width: 100px; height: 100px; object-fit: cover;">
+                {% endif %}
+            </div>
+            <div id="upload-foto" class="mb-3">
+                <h6>Atualizar Foto de Perfil (como Psicólogo)</h6>
+                <form method="POST" action="{{ url_for('routes.upload_foto_paciente_psicologo', paciente_id=paciente.id) }}" enctype="multipart/form-data">
+                    <div class="input-group">
+                        <input type="file" class="form-control" name="foto" accept="image/*" required>
+                        <button type="submit" class="btn btn-outline-secondary">Enviar</button>
+                    </div>
+                </form>
+            </div>
         </div>
-        <p></p>
-
-        <div id="upload-foto">
-            <h3>Atualizar Foto de Perfil</h3>
-            <form method="POST" action="{{ url_for('routes.upload_foto_paciente', paciente_id=paciente.id) }}" enctype="multipart/form-data">
-                <input type="file" name="foto" accept="image/*" required>
-                <button type="submit">Enviar Foto</button>
-            </form>
-        </div>
-
-        <p></p>
-        <a href="{{ url_for('routes.psicologo') }}" class="btn btn-secondary">Voltar para a lista de pacientes</a>
-
-        <hr>
-
-        <h3>Registros de Emoções</h3>
-        {% if registros_emocoes %}
-            <ul>
-                {% for registro in registros_emocoes %}
-                    <li>
-                        **Emoção:** {{ registro.emocao }} <br>
-                        <small>Data: {{ registro.data_registro.strftime('%d/%m/%Y %H:%M') }}</small>
-                    </li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p>Nenhum registro de emoção para este paciente ainda.</p>
-        {% endif %}
-
-        <hr>
-
-        <h3>Respostas do Questionário</h3>
-        {% if respostas_questionario %}
-            <ul>
-                {% for resposta in respostas_questionario %}
-                    <li>
-                        <strong>Data da Resposta:</strong> {{ resposta.data_resposta.strftime('%d/%m/%Y %H:%M') }} <br>
-                        <ul>
-                            <li>**Humor Geral:** {{ resposta.humor_geral }} / 5</li>
-                            <li>**Sentimento Principal:** {{ resposta.sentimento_principal }}</li>
-                            <li>**Dormiu Bem:** {% if resposta.dormiu_bem %}Sim{% else %}Não{% endif %}</li>
-                            <li>**Motivação para Tarefas:** {% if resposta.motivacao_tarefas %}Sim{% else %}Não{% endif %}</li>
-                            <li>**Causa de Estresse:** {% if resposta.causa_estresse %}{{ resposta.causa_estresse }}{% else %}Nenhuma reportada{% endif %}</li>
-                        </ul>
-                    </li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p>Nenhuma resposta de questionário para este paciente ainda.</p>
-        {% endif %}
     </div>
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
-</body>
-</html>
+
+    <a href="{{ url_for('routes.psicologo') }}" class="btn btn-secondary mb-4">Voltar para a lista de pacientes</a>
+
+    <h2 class="mt-4 mb-3">Registros de Emoções</h2>
+    {% if registros_emocoes %}
+        <div class="list-group mb-4">
+            {% for registro in registros_emocoes %}
+                <div class="list-group-item">
+                    <strong>Emoção:</strong> {{ registro.emocao }} <br>
+                    <small class="text-muted">Data: {{ registro.data_registro.strftime('%d/%m/%Y %H:%M') }}</small>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            Nenhum registro de emoção para este paciente ainda.
+        </div>
+    {% endif %}
+
+    <h2 class="mt-4 mb-3">Respostas do Questionário</h2>
+    {% if respostas_questionario %}
+        <div class="accordion" id="accordionQuestionarios">
+            {% for resposta in respostas_questionario %}
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="heading{{ loop.index }}">
+                        <button class="accordion-button {% if not loop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ loop.index }}" aria-expanded="{% if loop.first %}true{% else %}false{% endif %}" aria-controls="collapse{{ loop.index }}">
+                            Resposta de {{ resposta.data_resposta.strftime('%d/%m/%Y %H:%M') }}
+                        </button>
+                    </h2>
+                    <div id="collapse{{ loop.index }}" class="accordion-collapse collapse {% if loop.first %}show{% endif %}" aria-labelledby="heading{{ loop.index }}" data-bs-parent="#accordionQuestionarios">
+                        <div class="accordion-body">
+                            <ul class="list-unstyled">
+                                <li><strong>Humor Geral:</strong> {{ resposta.humor_geral }} / 5</li>
+                                <li><strong>Sentimento Principal:</strong> {{ resposta.sentimento_principal }}</li>
+                                <li><strong>Dormiu Bem:</strong> {% if resposta.dormiu_bem %}Sim{% else %}Não{% endif %}</li>
+                                <li><strong>Motivação para Tarefas:</strong> {% if resposta.motivacao_tarefas %}Sim{% else %}Não{% endif %}</li>
+                                <li><strong>Causa de Estresse:</strong> {% if resposta.causa_estresse %}{{ resposta.causa_estresse }}{% else %}Nenhuma reportada{% endif %}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info mt-4" role="alert">
+            Nenhuma resposta de questionário para este paciente ainda.
+        </div>
+    {% endif %}
+{% endblock %}
